@@ -40,14 +40,27 @@ func (kc *KafkaClient) SendMessage(message *sarama.ProducerMessage) error {
 	return nil
 }
 
-func (kc *KafkaClient) Destroy() error {
+func (kc *KafkaClient) CommitOffsets() error {
+	if kc.consumer == nil {
+		return errors.New("consumer is not prepared.")
+	}
+	return kc.consumer.Close()
+}
+
+func (kc *KafkaClient) Destroy() {
+	if e := kc.CommitOffsets(); e != nil {
+		log.Errorf("commit offset error : %v", e)
+	}
 	if kc.consumer != nil {
-		return kc.consumer.Close()
+		if e := kc.consumer.Close(); e != nil {
+			log.Errorf("close kafka consumer error : %v", e)
+		}
 	}
 	if kc.producer != nil {
-		return kc.producer.Close()
+		if e := kc.producer.Close(); e != nil {
+			log.Errorf("close kafka producer error : %v", e)
+		}
 	}
-	return nil
 }
 
 func (kc *KafkaClient) GetConf() KafkaProperties {
