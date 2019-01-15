@@ -107,8 +107,6 @@ func (kc *KafkaClient) newConsumer() {
 				if ok {
 					kc.receiver(msg)
 					consumer.MarkOffset(msg, "") // mark message as processed
-				} else {
-					log.Errorf("consume message from kafka[%s] failed.", kc.conf.String())
 				}
 			}
 		}
